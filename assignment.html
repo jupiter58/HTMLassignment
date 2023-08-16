@@ -5,8 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTML5 Assignment</title>
     <link href="style.css" rel="stylesheet" type="text/css">
+
+    <style>
+        /* Set up the canvas as a background */
+        body {
+            margin: 0; /* Remove default margin */
+        }
+        #myCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Position the canvas behind other content */
+        }
+
+        /* Style the form container */
+        .form-container {
+            position: relative;
+            padding: 20px;
+           /* Semi-transparent background for readability */
+        }
+    </style>
 </head>
 <body>
+    
+    <canvas id="myCanvas"></canvas>
+    <div class="form-container">
+
     <form method="POST">
         <div class="personal-details">
             <i>Personal Details</i>
@@ -259,6 +285,11 @@
                             Residential Address<span class="required">*</span> :
                         </label>
                         <textarea name="address" required></textarea>
+                        <p>Click the button to get your location</p>
+
+<button onclick="getLocation()">Get Location</button>
+
+<p id="demo"></p>
                     </td>
                     <td>
                         <label for="pincode">
@@ -305,6 +336,8 @@
                             <option value="Select">Select</option>
                             <option value="Kolkata">Kolkata</option>
                         </select>
+                        <button onclick="getLocationAndCalculateDistance()">Calculate Distance</button>
+            <p id="distanceResult"></p>
                     </td>
                 </tr>
             </table>
@@ -341,7 +374,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>
+                    <td colspan="3" style="text-align: center;">
                         <input type="submit" name="submit" id="submit">
                     </td>
                 </tr>
@@ -350,5 +383,94 @@
         <br>
         <center><input type="reset" id="reset"></center>
     </form>
+    </div>
+    <script>
+        // Get the canvas element
+        const canvas = document.getElementById("myCanvas");
+        const context = canvas.getContext("2d");
+        function updateCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = Math.max(window.innerHeight, document.body.scrollHeight);
+        }
+        updateCanvasSize();
+        window.addEventListener("resize", updateCanvasSize);
+
+        // Define gradient colors and create the gradient
+        const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#FABF8E'); // Start color
+        gradient.addColorStop(1, '#F79A4F'); // End color
+
+        // Set the fill style to the gradient and fill the canvas
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+
+        var x = document.getElementById("demo");
+
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition, showError);
+  } else { 
+    x.innerHTML = "Geolocation is not supported by this browser.";
+  }
+}
+
+function showPosition(position) {
+  x.innerHTML = "Latitude: " + position.coords.latitude + 
+  "<br>Longitude: " + position.coords.longitude;
+}
+
+function showError(error) {
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      x.innerHTML = "User denied the request for Geolocation."
+      break;
+    case error.POSITION_UNAVAILABLE:
+      x.innerHTML = "Location information is unavailable."
+      break;
+    case error.TIMEOUT:
+      x.innerHTML = "The request to get user location timed out."
+      break;
+    case error.UNKNOWN_ERROR:
+      x.innerHTML = "An unknown error occurred."
+      break;
+  }
+}
+
+
+function getLocationAndCalculateDistance() {
+        // Get the user's current location
+        navigator.geolocation.getCurrentPosition(function(position) {
+            var userLatitude = position.coords.latitude;
+            var userLongitude = position.coords.longitude;
+        // School's coordinates (replace with the actual school's coordinates)
+        var schoolLatitude = 22.5726; // Example latitude
+            var schoolLongitude = 88.3639; // Example longitude
+
+            // Calculate distance using Haversine formula
+            var distance = calculateDistance(userLatitude, userLongitude, schoolLatitude, schoolLongitude);
+
+            // Display the distance
+            document.getElementById("distanceResult").textContent = "Distance from school: " + distance.toFixed(2) + " km";
+        });
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        var R = 6371; // Radius of the Earth in km
+        var dLat = deg2rad(lat2 - lat1);
+        var dLon = deg2rad(lon2 - lon1);
+        var a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var distance = R * c; // Distance in km
+        return distance;
+    }
+
+    function deg2rad(deg) {
+        return deg * (Math.PI / 180);
+    }
+    </script>
 </body>
 </html>
